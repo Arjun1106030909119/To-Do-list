@@ -3,27 +3,316 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>To-Do List</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Disaster Reporting System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        select,
+        input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #disasters, #volunteers {
+            margin-top: 20px;
+        }
+
+        .disaster-card {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .disaster-card img {
+            max-width: 100%;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .success-message {
+            color: green;
+            font-weight: bold;
+        }
+
+        .error-message {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <div classname="company-name">
-        <h1><b>BlinkSnp:</b> To-Do List APP</h1>
+    <div class="container">
+        <h1>Disaster Reporting System</h1>
+
+        <!-- Report Form -->
+        <div id="reportForm" style="display: none;">
+            <h2>Report Disaster</h2>
+            <div class="form-group">
+                <label for="address">Address:</label>
+                <input type="text" id="address">
+            </div>
+            <div class="form-group">
+                <label for="disaster">Disaster:</label>
+                <select id="disaster">
+                    <option value="">Select Disaster</option>
+                    <option value="earthquake">Earthquake</option>
+                    <option value="flood">Flood</option>
+                    <option value="tornadoes">Tornadoes</option>
+                    <option value="volcanoes">Volcanoes</option>
+                    <option value="tsunamis">Tsunamis</option>
+                    <option value="landslides">Landslides</option>
+                    <option value="forest fires">Forest fires</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="image">Upload Image:</label>
+                <input type="file" id="image">
+            </div>
+            <button onclick="submitDisaster()">Submit</button>
+            <p id="submitMessage" class="success-message" style="display: none;">Disaster Submitted!</p>
+            <p id="errorMessage" class="error-message" style="display: none;">Please fill in all fields!</p>
         </div>
-    </header>
-    <main>
-        <h2>To-Do List</h2>
-        <input type="text" id="task-input" placeholder="Enter a task">
-        <button id="add-task">ADD TASK</button>
-        <ul id="task-list">
-            <!--tasks will be listed here-->
-        </ul>
-        <button id="mark-all-completed">Mark all Completed</button>
-        <p id="completed-counter">0 task Completed</p>
-        
-    </main>
-    <footer><B>THANK YOU FOR USING WEBSITE</B></footer>
-    <script src="script.js"></script>
+
+        <!-- View Disasters -->
+        <div id="disasters" style="display: none;">
+            <h2>Disasters</h2>
+            <div id="disasterList"></div>
+        </div>
+
+        <!-- Volunteers -->
+        <div id="volunteers" style="display: none;">
+            <h2>Volunteers</h2>
+            <div id="volunteerList"></div>
+        </div>
+
+        <!-- Add Volunteers Form -->
+        <div id="addVolunteersForm" style="display: none;">
+            <h2>Add Volunteers</h2>
+            <div class="form-group">
+                <label for="volunteerName">Name:</label>
+                <input type="text" id="volunteerName">
+            </div>
+            <div class="form-group">
+                <label for="volunteerPhone">Phone Number:</label>
+                <input type="text" id="volunteerPhone">
+            </div>
+            <div class="form-group">
+                <label for="volunteerAddress">Address:</label>
+                <input type="text" id="volunteerAddress">
+            </div>
+            <button onclick="addVolunteer()">Submit</button>
+            <p id="volunteerSubmitMessage" class="success-message" style="display: none;">Volunteer Submitted!</p>
+            <p id="errorMessage" class="error-message" style="display: none;">Please fill in all fields!</p>
+        </div>
+
+        <center>
+            <button onclick="showReportForm()">Report Disaster</button>
+            <button onclick="showDisasters()">View Disasters</button>
+            <button onclick="showAddVolunteers()">Add Volunteers</button>
+            <button onclick="showVolunteers()">Volunteers</button>
+            <button onclick="goToFunds()">Funds</button>
+        </center>
+    </div>
+
+    <script>
+        let reportedDisasters = JSON.parse(localStorage.getItem('reportedDisasters')) || [];
+        let volunteers = JSON.parse(localStorage.getItem('volunteers')) || [];
+
+        function saveReportedDisasters() {
+            localStorage.setItem('reportedDisasters', JSON.stringify(reportedDisasters));
+        }
+
+        function saveVolunteers() {
+            localStorage.setItem('volunteers', JSON.stringify(volunteers));
+        }
+
+        function showReportForm() {
+            hideAll();
+            document.getElementById('reportForm').style.display = 'block';
+        }
+
+        function showDisasters() {
+            hideAll();
+            document.getElementById('disasters').style.display = 'block';
+            displayDisasters();
+        }
+
+        function showVolunteers() {
+            hideAll();
+            document.getElementById('volunteers').style.display = 'block';
+            displayVolunteers();
+        }
+
+        function showAddVolunteers() {
+            hideAll();
+            document.getElementById('addVolunteersForm').style.display = 'block';
+        }
+
+        function goToFunds() {
+            window.location.href = 'https://www.upilinks.in/payment-link/upi1941459560';
+        }
+
+        function submitDisaster() {
+            const address = document.getElementById('address').value;
+            const disaster = document.getElementById('disaster').value;
+            const imageFile = document.getElementById('image').files[0];
+
+            if (address && disaster && imageFile) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const imageDataURL = event.target.result;
+                    const disasterData = {
+                        address: address,
+                        disaster: disaster,
+                        image: imageDataURL
+                    };
+                    reportedDisasters.push(disasterData);
+                    saveReportedDisasters();
+                    document.getElementById('submitMessage').style.display = 'block';
+                    document.getElementById('errorMessage').style.display = 'none';
+                    displayDisasters();
+                };
+                reader.readAsDataURL(imageFile);
+            } else {
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('submitMessage').style.display = 'none';
+            }
+        }
+
+        function displayDisasters() {
+            const disasterList = document.getElementById('disasterList');
+            disasterList.innerHTML = '';
+
+            reportedDisasters.forEach((disaster, index) => {
+                const disasterCard = document.createElement('div');
+                disasterCard.classList.add('disaster-card');
+
+                const img = document.createElement('img');
+                img.src = disaster.image;
+                img.alt = disaster.disaster;
+                disasterCard.appendChild(img);
+
+                const addressPara = document.createElement('p');
+                addressPara.textContent = `Address: ${disaster.address}`;
+                disasterCard.appendChild(addressPara);
+
+                const disasterPara = document.createElement('p');
+                disasterPara.textContent = `Disaster: ${disaster.disaster}`;
+                disasterCard.appendChild(disasterPara);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = function () {
+                    removeDisaster(index);
+                };
+                disasterCard.appendChild(deleteButton);
+
+                disasterList.appendChild(disasterCard);
+            });
+        }
+
+        function addVolunteer() {
+            const name = document.getElementById('volunteerName').value;
+            const phone = document.getElementById('volunteerPhone').value;
+            const address = document.getElementById('volunteerAddress').value;
+
+            if (name && phone && address) {
+                const newVolunteer = {
+                    name: name,
+                    phone: phone,
+                    address: address
+                };
+
+                volunteers.push(newVolunteer);
+                saveVolunteers();
+                document.getElementById('volunteerSubmitMessage').style.display = 'block';
+                displayVolunteers();
+            }
+        }
+
+        function displayVolunteers() {
+            const volunteerList = document.getElementById('volunteerList');
+            volunteerList.innerHTML = '';
+
+            volunteers.forEach((volunteer, index) => {
+                const volunteerPara = document.createElement('p');
+                volunteerPara.textContent = `${volunteer.name}, ${volunteer.phone}, ${volunteer.address}`;
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = function () {
+                    removeVolunteer(index);
+                };
+
+                volunteerPara.appendChild(deleteButton);
+                volunteerList.appendChild(volunteerPara);
+            });
+        }
+
+        function removeDisaster(index) {
+            reportedDisasters.splice(index, 1);
+            saveReportedDisasters();
+            displayDisasters();
+        }
+
+        function removeVolunteer(index) {
+            volunteers.splice(index, 1);
+            saveVolunteers();
+            displayVolunteers();
+        }
+
+        function hideAll() {
+            document.getElementById('reportForm').style.display = 'none';
+            document.getElementById('disasters').style.display = 'none';
+            document.getElementById('volunteers').style.display = 'none';
+            document.getElementById('addVolunteersForm').style.display = 'none';
+        }
+    </script>
 </body>
 </html>
